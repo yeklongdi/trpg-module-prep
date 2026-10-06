@@ -1,0 +1,4 @@
+interface:
+  display_name: "读模组与带团资料整理"
+  short_description: "按五目录整理跑团模组，生成互联带团文档、主持CG与逐形态NPC外貌"
+  default_prompt: "使用 $trpg-module-prep 读取我指定的模组资料，按五个文件夹加总索引整理带团文档、NPC与怪物资料，保留手工修改并完成验收。"
