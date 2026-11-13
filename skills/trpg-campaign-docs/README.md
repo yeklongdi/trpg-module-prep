@@ -8,7 +8,7 @@
 
 ## 它做什么
 
-把 PDF、DOCX、TXT 或 Markdown 原文整理为章节文字流程、可朗读的主持 CG、NPC 与怪物资料和总索引。章节路线用 Mermaid 或 Markdown 缩进大纲，NPC 和怪物可在场景内提供速查。已有 Canvas 可以继续互链使用。
+把 PDF、DOCX、TXT 或 Markdown 原文整理为章节文字流程、可朗读的主持 CG、NPC 与怪物资料和总索引。章节路线用 Mermaid 或 Markdown 缩进大纲，NPC 和怪物可在场景内提供速查。需要 Obsidian 白板时，可用脚本按文字路线生成 Canvas，或将已有白板与《流程（文字）》双向互链。
 
 ## 五条硬规则
 
@@ -41,6 +41,7 @@
 | --- | --- | --- |
 | `scripts/intake.py` | 抽取与版面清洗，产出 `模组/原文/` | 0 / 2 输入错误 / 3 部分失败 |
 | `scripts/terms.py` | 术语台账、跨产物替换、可念性扫描 | 0 / 1 拒绝（改数字）/ 2 读取失败 |
+| `scripts/canvas_link.py` | 白板与《流程（文字）》双向互链，按路线生成/整理白板 | 0 通过 / 2 输入或解析失败 |
 | `scripts/check_campaign.py` | 只读校验：结构、数值、术语、字段、引用 | 0 通过 / 1 有问题 / 2 读取失败 |
 
 分章验收时，填写章节文件夹名与该章在 `00-全文.md` 里的原文行范围。
@@ -62,7 +63,7 @@ python scripts/check_campaign.py "模组根目录" --chapter "第01章 雾港" -
 python -m unittest discover -s tests -v
 ```
 
-用例覆盖抽取、分章数值与引用校验、白板兼容、术语替换与撤销、UTF-8 输出等行为。
+用例覆盖抽取、分章数值与引用校验、白板生成与双向互链、术语替换与撤销、UTF-8 输出等行为。
 
 ## 已知边界
 

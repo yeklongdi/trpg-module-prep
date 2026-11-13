@@ -21,7 +21,7 @@ description: "按用户范围整理 DND、COC 等跑团模组，追溯原文来�
 模组名/
 ├─ 带团文档/第01章 章名/
 │  ├─ 模组名 第01章 章名 流程（文字）.md（含场景路线）
-│  ├─ 模组名 第01章 章名 流程（白板）.canvas（可选）
+│  ├─ 模组名 第01章 章名 流程（白板）.canvas（可选，可用 canvas_link.py 生成或互链）
 │  └─ 模组名 第01章 章名 主持CG.md
 ├─ 怪物/   模组名 怪物数据.md · 模组名 怪物描述.md
 ├─ 模组/   原文/（只读）· 正文.md · 术语表.md · 术语台账.json · 加工进度.json
@@ -42,7 +42,7 @@ description: "按用户范围整理 DND、COC 等跑团模组，追溯原文来�
 
 **3 结构。** 切章节，给场景 S、地点 L、NPC N、怪物 M、线索 C、待确认事项 Q 编稳定编号，写总索引。编号一经分配不再改，标题必须带实际名称。规范见 [目录与索引](references/structure-and-index.md)。
 
-**4 写流程和 CG。** 在文字流程中用 Mermaid 或 Markdown 缩进大纲表达场景路线。按 S 编号互链流程和 CG，在需要的场景内放 NPC、怪物的简短主持速查。CG 写触发条件、朗读正文和主持人备注。朗读段只写玩家此刻能观察到的东西，控制在 1—3 个短段，必要时按昼夜、潮位、线索或形态分别写。要求见 [章节与CG](references/chapters-and-cg.md)。
+**4 写流程和 CG。** 在文字流程中用 Mermaid 或 Markdown 缩进大纲表达场景路线。按 S 编号互链流程和 CG，在需要的场景内放 NPC、怪物的简短主持速查。需要白板或接管已有 `.canvas` 时，用 `canvas_link.py` 为每个白板场景卡（及展开卡、概览卡）在顶部建立直达《流程（文字）》对应 `#Sxxx` 小节与《主持CG》的大号双链，并在文字流程补齐回链。CG 写触发条件、朗读正文和主持人备注。朗读段只写玩家此刻能观察到的东西，控制在 1—3 个短段，必要时按昼夜、潮位、线索或形态分别写。要求见 [章节与CG](references/chapters-and-cg.md)。
 
 **5 实体。** NPC 三份汇总，人设用六字段（动机、秘密、口头禅、弱点、外貌、背景）加工，附五场景台词与各形态外貌；性格结论注明原文依据，区分明示事实与推断；缺的写【待补】。怪物数据与描述分开。仅当用户明确提出【调查dnd怪物数据】时，从 https://5e.kiwee.top/ 查找并核对规则版本，标注来源与版本，保留模组改动；没有匹配或无法访问时登记待补，不编数值，其他规则不套用该站数据。规范见 [NPC与怪物](references/npc-and-monsters.md)。
 
@@ -57,11 +57,12 @@ python scripts/terms.py apply "模组根目录" [--write]
 python scripts/terms.py export "模组根目录" "模组/术语表.md"
 python scripts/terms.py undo "模组根目录" [--id N]
 python scripts/terms.py scan "带团文档" "npc" [--max-chars 40]
+python scripts/canvas_link.py "模组根目录" [--chapter "第01章 章名"] [--create] [--tidy-layout] [--write] [--json]
 python scripts/check_campaign.py "模组根目录" [--json] [--allow-numeric-loss]
 python scripts/check_campaign.py "模组根目录" --chapter "第01章 章名" --source-lines 12-30 [--json]
 ```
 
-`terms.py` 每次落盘前把受影响文件备份到 `模组/.backup/<时间戳>/`，`undo` 可整批回退；`check_campaign.py` 只输出到终端，不改文件。`--allow-numeric-loss` 仅用于已确认的规则差异，必须在总索引写明原因，不得用来掩盖笔误或 OCR 错字。退出码 0 通过，1 有问题，2 输入或读取错误。
+`terms.py` 与 `canvas_link.py` 每次落盘前都会把受影响文件备份到 `模组/.backup/<时间戳>/`；`terms.py undo` 可整批回退，`check_campaign.py` 只输出到终端，不改文件。`--allow-numeric-loss` 仅用于已确认的规则差异，必须在总索引写明原因，不得用来掩盖笔误或 OCR 错字。退出码 0 通过，1 有问题，2 输入或读取错误。
 
 ## 断点与续跑
 

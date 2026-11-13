@@ -450,6 +450,101 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("root-layout", codes(result))
 
+    def test_canvas_link_creates_from_flow_and_passes_check(self) -> None:
+        self.build(legacy_canvas=False)
+        chapter = self.root / "带团文档" / CHAPTER
+        flow = chapter / "雾港 第01章 雾港 流程（文字）.md"
+        cg = chapter / "雾港 第01章 雾港 主持CG.md"
+        flow.write_text(
+            flow.read_text(encoding="utf-8").replace(
+                "- S001 码头",
+                "```mermaid\nflowchart TD\n    S001[\"S001 码头\"] -->|搜查| S001\n```",
+            ),
+            encoding="utf-8",
+        )
+        canvas = chapter / "雾港 第01章 雾港 流程（白板）.canvas"
+        dry = run("canvas_link.py", str(self.root), "--create", "--json")
+        self.assertEqual(dry.returncode, 0, dry.stdout + dry.stderr)
+        self.assertFalse(canvas.is_file())
+        self.assertFalse(json.loads(dry.stdout)["written"])
+
+        applied = run("canvas_link.py", str(self.root), "--create", "--write", "--json")
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.assertTrue(canvas.is_file())
+        data = json.loads(canvas.read_text(encoding="utf-8"))
+        s1_node = next(n for n in data["nodes"] if n["id"] == "node_S001")
+        self.assertTrue(s1_node["text"].startswith("# S001 码头\n## 👉 [[雾港 第01章 雾港 流程（文字）#S001 码头|跳转文字流程（S001）]]"))
+        self.assertIn("[[雾港 第01章 雾港 流程（白板）|流程（白板）]]", flow.read_text(encoding="utf-8"))
+        self.assertIn("[[雾港 第01章 雾港 流程（白板）|流程（白板）]]", cg.read_text(encoding="utf-8"))
+
+        checked = run("check_campaign.py", str(self.root), "--json")
+        self.assertEqual(checked.returncode, 0, checked.stdout)
+        self.assertTrue(json.loads(checked.stdout)["ok"])
+
+    def test_canvas_link_syncs_existing_board_and_detail_nodes(self) -> None:
+        self.build(legacy_canvas=True)
+        chapter = self.root / "带团文档" / CHAPTER
+        canvas = chapter / "雾港 第01章 雾港 流程（白板）.canvas"
+        existing = {
+            "nodes": [
+                {
+                    "id": "ch1_header",
+                    "type": "text",
+                    "x": 120,
+                    "y": -260,
+                    "width": 520,
+                    "height": 160,
+                    "text": "# 雾港 · 第01章 雾港\n- **核心文档**：[文字](%E9%9B%BE%E6%B8%AF%20%E7%AC%AC01%E7%AB%A0%20%E9%9B%BE%E6%B8%AF%20%E6%B5%81%E7%A8%8B%EF%BC%88%E6%96%87%E5%AD%97%EF%BC%89.md)",
+                },
+                {
+                    "id": "node_S001",
+                    "type": "text",
+                    "x": 120,
+                    "y": 40,
+                    "width": 520,
+                    "height": 320,
+                    "text": "# S001 码头\n- **导航**：[文字流程](%E9%9B%BE%E6%B8%AF%20%E7%AC%AC01%E7%AB%A0%20%E9%9B%BE%E6%B8%AF%20%E6%B5%81%E7%A8%8B%EF%BC%88%E6%96%87%E5%AD%97%EF%BC%89.md#S001%20%E7%A0%81%E5%A4%B4)\n- 手工笔记：潮位每两轮上升",
+                },
+                {
+                    "id": "node_S001_detail",
+                    "type": "text",
+                    "x": 700,
+                    "y": 40,
+                    "width": 520,
+                    "height": 320,
+                    "text": "### 区域要素与分支裁定（S001）\n- 码头东北角可隐蔽。",
+                },
+            ],
+            "edges": [
+                {"id": "edge_detail", "fromNode": "node_S001", "fromSide": "right", "toNode": "node_S001_detail", "toSide": "left", "label": "区域与战术展开"}
+            ],
+        }
+        canvas.write_text(json.dumps(existing, ensure_ascii=False, indent=2), encoding="utf-8")
+        before = canvas.read_bytes()
+
+        dry = run("canvas_link.py", str(self.root), "--tidy-layout", "--json")
+        self.assertEqual(dry.returncode, 0, dry.stdout + dry.stderr)
+        self.assertEqual(canvas.read_bytes(), before)
+
+        synced = run("canvas_link.py", str(self.root), "--tidy-layout", "--write", "--json")
+        self.assertEqual(synced.returncode, 0, synced.stdout + synced.stderr)
+        data = json.loads(canvas.read_text(encoding="utf-8"))
+        nodes = {n["id"]: n for n in data["nodes"]}
+        self.assertEqual((nodes["node_S001"]["x"], nodes["node_S001"]["y"]), (120, 40))
+        self.assertIn("手工笔记：潮位每两轮上升", nodes["node_S001"]["text"])
+        self.assertIn("## 👉 [[雾港 第01章 雾港 流程（文字）#S001 码头|跳转文字流程（S001）]]", nodes["node_S001"]["text"])
+        self.assertIn("- **直达正文**：[[雾港 第01章 雾港 流程（文字）#S001 码头|👉 跳至《流程（文字）》S001 小节]]", nodes["node_S001_detail"]["text"])
+        self.assertGreaterEqual(nodes["node_S001_detail"]["x"] - (nodes["node_S001"]["x"] + nodes["node_S001"]["width"]), 160)
+        self.assertEqual(data["edges"][0]["label"], "区域细则")
+        self.assertTrue(list((self.root / "模组" / ".backup").rglob("*.canvas")))
+
+        again = run("canvas_link.py", str(self.root), "--tidy-layout", "--write", "--json")
+        self.assertEqual(again.returncode, 0)
+        self.assertEqual(json.loads(again.stdout)["changed_files"], [])
+
+        checked = run("check_campaign.py", str(self.root), "--json")
+        self.assertEqual(checked.returncode, 0, checked.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
