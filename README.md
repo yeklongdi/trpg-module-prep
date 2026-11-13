@@ -4,6 +4,8 @@
 
 这份 skill 来自“读模组工具流”Canvas，包含实际执行步骤、按需阅读的规范和只读结构检查脚本。它由使用技能的 AI 读取原文并执行整理；检查脚本只检查已生成资料，不负责生成全部内容。
 
+**成稿版** `$trpg-campaign-docs` 支持按章核对规则数值，章节内提供 Mermaid 或缩进路线、Obsidian 白板生成与《流程（文字）》双向互链，以及 NPC 和怪物速查。[安装与使用](skills/trpg-campaign-docs/README.md)
+
 ## 使用
 
 安装后，在 Codex 输入：

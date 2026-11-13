@@ -1,0 +1,4 @@
+interface:
+  display_name: "跑团模组成稿"
+  short_description: "整理跑团模组原文，生成互联带团资料并校验数值与引用"
+  default_prompt: "使用 $trpg-campaign-docs 整理我指定的模组资料，保留手工修改并完成五目录资料、来源追溯、数值与引用核对。"
