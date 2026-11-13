@@ -6,6 +6,17 @@
 
 **成稿版** `$trpg-campaign-docs` 支持按章核对规则数值，章节内提供 Mermaid 或缩进路线、Obsidian 白板生成与《流程（文字）》双向互链，以及 NPC 和怪物速查。[安装与使用](skills/trpg-campaign-docs/README.md)
 
+## 最近更新
+
+### 2026-11-13｜`trpg-campaign-docs` 正式合入 `main` 并新增白板与文字流程双向互链
+- **正式发布成稿版技能到默认分支**：合并 [PR #1](https://github.com/yeklongdi/trpg-module-prep/pull/1) 至 `main`，新增整合版技能 `skills/trpg-campaign-docs`（涵盖原文抽取 `scripts/intake.py`、术语台账与回退 `scripts/terms.py`、白板互链 `scripts/canvas_link.py`、结构/数值/引用校验 `scripts/check_campaign.py`）。
+- **新增白板双向互链脚本 `scripts/canvas_link.py`**：
+  - 支持从《流程（文字）》的场景路线（Mermaid 或 Markdown 缩进大纲）新建 `.canvas` 白板（`--create`），或接管刷新已有白板并保留手工坐标与手写内容；
+  - 自动在白板章节概览卡、场景主卡及旁侧展开/细则卡顶部插入大号 Obsidian 双链（`[[文件名#Sxxx 场景名|...]]`），点击即可跳至《流程（文字）》对应 `Sxxx` 小节或《主持CG》；
+  - 同步在《流程（文字）》与《主持CG》各场景小节补齐返回 `.canvas` 的链接，落盘前先备份原文件至 `模组/.backup/`；
+  - 支持 `--tidy-layout` 整理卡片尺寸（`560 × 400`）、拉开旁侧展开卡水平间距与精简连线短标签，避免节点文字重叠。
+- **规范与测试更新**：同步更新 `skills/trpg-campaign-docs/` 的 `README.md`、`SKILL.md` 及 `references/{chapters-and-cg,structure-and-index,fidelity-and-check}.md`，并在 `tests/test_pipeline.py` 新增白板生成与双向互链用例（`trpg-campaign-docs` 17 项测试与根目录 12 项兼容测试均通过）。
+
 ## 使用
 
 安装后，在 Codex 输入：
